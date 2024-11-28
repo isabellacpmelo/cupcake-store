@@ -1,0 +1,42 @@
+{
+  "name": "naruto-game",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.16.5",
+    "@unocss/preset-icons": "^0.54.0",
+    "@unocss/reset": "^0.54.0",
+    "@vueuse/core": "^10.7.2",
+    "axios": "^1.4.0",
+    "file-saver": "^2.0.5",
+    "quasar": "^2.12.3",
+    "vue": "^3.3.4",
+    "vue-json-excel3": "^1.0.0",
+    "vue-router": "^4.2.4",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^0.39.8",
+    "@iconify-json/carbon": "^1.1.18",
+    "@iconify/json": "^2.2.95",
+    "@quasar/vite-plugin": "^1.4.1",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "eslint": "^8.46.0",
+    "sass": "1.32.12",
+    "unocss": "^0.54.0",
+    "unplugin-auto-import": "^0.16.6",
+    "unplugin-vue-components": "^0.25.1",
+    "vite": "^4.4.7",
+    "vite-plugin-pages": "^0.31.0",
+    "vite-plugin-vue-layouts": "^0.8.0",
+    "vite-plugin-web-config": "^0.0.2"
+  }
+}
