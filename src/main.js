@@ -27,6 +27,7 @@ app.use(Quasar, {
       negative: '#8b0f1d',
       info: '#26a4be',
       warning: '#ffd700',
+      purple: '#8a2be2',
     },
   },
 })

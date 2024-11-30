@@ -47,6 +47,27 @@ function closePurchase() {
   console.warn('Compra finalizada')
   cupcakeBasket.value = []
 }
+
+const cupcakeBasketByFlavor = computed(() => cupcakeBasket.value.reduce((acc, cupcake) => {
+  if (acc[cupcake.name])
+    acc[cupcake.name].push(cupcake)
+  else
+    acc[cupcake.name] = [cupcake]
+  return acc
+}, {}))
+
+const cupcakeBasketByFlavorAndAmount = computed(() => {
+  return Object.entries(cupcakeBasketByFlavor.value).map(([flavor, cupcakes]) => {
+    return {
+      flavor,
+      amount: cupcakes.length,
+    }
+  })
+})
+
+const cupcakeBasketByFlavorAndAmountSorted = computed(() => {
+  return cupcakeBasketByFlavorAndAmount.value.sort((a, b) => a.flavor.localeCompare(b.flavor))
+})
 </script>
 
 <template>
@@ -67,8 +88,11 @@ function closePurchase() {
             Seu carrinho esta vazio
           </div>
           <div class="mt-10">
-            <div v-for="cupcake in cupcakeBasket" :key="cupcake.id">
-              {{ cupcake.name }} - R$ {{ cupcake.price }} ({{ cupcakeAmountByFlavor(cupcake) }})
+            <div
+              v-for="cupcake in cupcakeBasketByFlavorAndAmountSorted"
+              :key="cupcake.flavor"
+            >
+              {{ cupcake.amount }} x {{ cupcake.flavor }} - R$ {{ cupcake.amount * cupcakeBasket.find(c => c.name === cupcake.flavor).price }}
             </div>
           </div>
           <div v-if="cupcakeBasket.length > 0">
@@ -84,7 +108,7 @@ function closePurchase() {
               label="Limpar carrinho" @click="cupcakeBasket = []"
             />
             <q-btn
-              color="primary"
+              color="purple"
               label="Finalizar compra"
               @click="closePurchase"
             />
@@ -107,25 +131,28 @@ function closePurchase() {
       </p>
     </div>
     <div class="my-6 py-6 w-full flex flex-col justify-center items-center">
-      <div class="p-10 flex justify-center items-center bg-coolGray w-200 mb-4">
-        <div v-for="cupcake in cupcakeList" :key="cupcake.id" class="flex justify-center items-center gap-10 mb-4">
-          <div class="flex justify-between items-center w-100">
+      <div class="p-10 flex justify-center items-center bg-gradient-to-l from-pink-100  to-pink-200 drop-shadow-lg rounded w-200 mb-4">
+        <div v-for="cupcake in cupcakeList" :key="cupcake.id" class="flex justify-center items-center mb-4">
+          <div class="flex items-center gap-10 w-100">
             <div>
               <q-btn
-                color="primary"
+                color="purple"
                 icon="-"
                 @click="removeCupcake(cupcake)"
               />
             </div>
             <div class="font-bold">
-              ({{ cupcakeAmountByFlavor(cupcake) }}) {{ cupcake.name }} - R$ {{ cupcake.price }}
+              {{ cupcakeAmountByFlavor(cupcake) }}
             </div>
             <div>
               <q-btn
-                color="primary"
+                color="purple"
                 icon="+"
                 @click="addCupcake(cupcake)"
               />
+            </div>
+            <div class="font-bold">
+              {{ cupcake.name }} - R$ {{ cupcake.price }}
             </div>
           </div>
           <!-- <q-btn color="primary">
@@ -140,7 +167,7 @@ function closePurchase() {
       </div>
       <div>
         <q-btn
-          color="primary"
+          color="purple"
           @click="icon = true"
         >
           <div class="flex items-center justify-center gap-2">
