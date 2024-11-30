@@ -96,7 +96,7 @@ function closePurchase() {
       <h1 class="text-[50px] font-bold drop-shadow-xl">
         Cupcake Store
       </h1>
-      <img class="w-[55px] h-[55px] drop-shadow-xl" src="cupcake-icon.png" alt="cupcake-icon">
+      <img class="w-[55px] h-[55px] drop-shadow-xl" src="/src/assets/images/cupcake-icon.png" alt="cupcake-icon">
     </div>
     <div class="my-6 mx-32 p-2 text-[18px] text-center">
       <p class="mb-2">
