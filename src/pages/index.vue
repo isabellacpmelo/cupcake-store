@@ -86,6 +86,7 @@ function clearBasket() {
 const userInfo = ref([])
 const latestOrder = ref({})
 
+const popupConfirm = ref(false)
 function closePurchase() {
   const orders = JSON.parse(localStorage.getItem('orders')) || []
 
@@ -106,6 +107,7 @@ function closePurchase() {
   userInfo.value = orders
   latestOrder.value = newOrder
 
+  popupConfirm.value = true
   clearBasket()
 }
 
@@ -285,6 +287,42 @@ function openPopupOrder() {
 
         <q-card-actions align="right">
           <q-btn flat label="OK" color="primary" @click="popupOrder = false" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="popupConfirm">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">
+            Confirmação de pedido
+          </div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          <div>Olá <span class="font-bold">{{ latestOrder.name }}</span>, seu pedido foi realizado com sucesso!</div>
+          <div class="my-1 font-semibold">
+            Items ({{ latestOrder.items.length }}):
+          </div>
+          <div
+            v-for="cupcake in latestOrder.items"
+            :key="cupcake.name"
+            class="mb-2"
+          >
+            {{ cupcake.name }} - R${{ cupcake.price }}
+          </div>
+          <div>
+            Total: R${{ latestOrder.total }}
+          </div>
+          <div>
+            Endereço: {{ latestOrder.address }}
+          </div>
+          <div>
+            Telefone: {{ latestOrder.phone }}
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" @click="popupConfirm = false" />
         </q-card-actions>
       </q-card>
     </q-dialog>
