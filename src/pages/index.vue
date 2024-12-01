@@ -172,9 +172,6 @@ function openPopupOrder() {
               Ver Pedidos
             </div>
             <i class="bi bi-cart-check-fill" />
-            <div>
-              ({{ cupcakeBasket.length }})
-            </div>
           </div>
         </q-btn>
         <q-btn
@@ -256,7 +253,7 @@ function openPopupOrder() {
       </q-card>
     </q-dialog>
     <q-dialog v-model="popupOrder">
-      <q-card>
+      <q-card style="width: 400px">
         <q-card-section>
           <div class="text-h6">
             Pedidos Realizados
