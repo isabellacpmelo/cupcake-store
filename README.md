@@ -1,7 +1,7 @@
 # Cupcake Store
 
 <div align="left">
-<a href="https://cupcack-store.netlify.app/#/"><img height="355em" alt="Narutinho Game" src="https://github.com/isabellacpmelo/naruto-game/assets/42364778/c0b4b219-209d-4ecc-8f2c-b2c4cca24a06" /></a>
+<a href="https://cupcack-store.netlify.app/#/"><img height="355em" alt="Narutinho Game" src="https://github.com/isabellacpmelo/cupcake-store/blob/main/public/cupcake_store.png?raw=true" /></a>
 </div>
 </br>
 <a href="https://cupcack-store.netlify.app/#/">Click here to access the website</a>
