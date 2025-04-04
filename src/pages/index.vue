@@ -17,6 +17,10 @@ function typeEffect() {
   }
 }
 
+function openCatalog() {
+  console.log('Abrir catálogo!')
+}
+
 onMounted(() => {
   setTimeout(() => {
     isVisible.value = true
@@ -42,9 +46,13 @@ onMounted(() => {
         {{ typedText }}
       </h1>
     </div>
-    <div class="mt-20 hidden">
-      <button type="button">
-        <i class="bi-arrow-down-circle text-5xl text-sky-800 animate-bounce" />
+    <div class="mt-20">
+      <button
+        type="button"
+        class="pulse w-12 h-12 rounded-fullflex justify-center items-center"
+        @click="openCatalog">
+        <i
+          class="bi-arrow-down-circle text-5xl text-sky-800 animate-bounce rounded-full" />
       </button>
     </div>
   </div>
