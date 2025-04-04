@@ -1,5 +1,4 @@
 <!-- @format -->
-<!-- eslint-disable no-console -->
 
 <script setup>
 const baseUrl = window.origin
@@ -17,11 +16,15 @@ function typeEffect() {
   }
 }
 
+const activeCatalogBtn = ref(false)
+const isOpen = ref(false)
+
 function openCatalog() {
-  console.log('Abrir catálogo!')
+  isOpen.value = true
+  activeCatalogBtn.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
   setTimeout(() => {
     isVisible.value = true
     setTimeout(() => {
@@ -29,36 +32,60 @@ onMounted(() => {
       typeEffect()
     }, 1000)
   }, 500)
+
+  await delay(2.5)
+  activeCatalogBtn.value = true
 })
 </script>
 
 <template>
-  <div class="h-screen flex flex-col justify-center items-center">
-    <div class="flex justify-center items-center">
-      <Transition name="zoom">
-        <img
-          v-if="isVisible"
-          :src="`${baseUrl}/img/cupcake-special.png`"
-          class="h-[500px] brightness-125" />
-      </Transition>
+  <Transition name="slide">
+    <div
+      :key="isOpen"
+      :class="isOpen ? '' : 'h-screen'"
+      class="flex flex-col justify-center items-center overflow-hidden">
+      <div class="flex justify-center items-center">
+        <Transition name="zoom">
+          <img
+            v-if="isVisible"
+            :src="`${baseUrl}/img/cupcake-special.png`"
+            class="brightness-125"
+            :class="isOpen ? 'h-[250px]' : 'h-[500px]'" />
+        </Transition>
 
-      <h1 v-if="showTitle" class="text-8xl -ml-20 font-bold text-sky-800">
-        {{ typedText }}
-      </h1>
+        <h1
+          v-if="showTitle"
+          :class="isOpen ? 'text-5xl -ml-10 mr-10' : '-ml-20 mr-20 text-8xl '"
+          class="font-bold text-sky-800">
+          {{ typedText }}
+        </h1>
+      </div>
+      <Transition name="zoom">
+        <div v-if="activeCatalogBtn" class="mt-20">
+          <button
+            type="button"
+            class="pulse w-12 h-12 rounded-full flex justify-center items-center"
+            @click="openCatalog">
+            <i
+              class="bi-arrow-down-circle text-5xl text-sky-800 animate-bounce rounded-full" />
+          </button>
+        </div>
+      </Transition>
     </div>
-    <div class="mt-20">
-      <button
-        type="button"
-        class="pulse w-12 h-12 rounded-fullflex justify-center items-center"
-        @click="openCatalog">
-        <i
-          class="bi-arrow-down-circle text-5xl text-sky-800 animate-bounce rounded-full" />
-      </button>
-    </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped>
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateY(-25%);
+}
+
 .zoom-enter-active,
 .zoom-leave-active {
   transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
