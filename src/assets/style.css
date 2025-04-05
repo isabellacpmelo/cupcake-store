@@ -40,6 +40,14 @@ body {
   );
 }
 
+a {
+  font-weight: 500 !important;
+}
+
+a:hover {
+  font-weight: 700 !important;
+}
+
 .pulse {
   padding: 10px 20px;
   background-color: purple;

@@ -43,19 +43,19 @@ onMounted(async () => {
     <div
       :key="isOpen"
       :class="isOpen ? '' : 'h-screen'"
-      class="flex flex-col justify-center items-center overflow-hidden">
-      <div class="flex justify-center items-center">
+      class="flex flex-col justify-center items-center overflow-hidden my-10">
+      <div class="flex justify-center items-center gap-4">
         <Transition name="zoom">
           <img
             v-if="isVisible"
             :src="`${baseUrl}/img/cupcake-special.png`"
             class="brightness-125"
-            :class="isOpen ? 'h-[250px]' : 'h-[500px]'" />
+            :class="isOpen ? 'h-[100px]' : 'h-[500px]'" />
         </Transition>
 
         <h1
           v-if="showTitle"
-          :class="isOpen ? 'text-5xl -ml-10 mr-10' : '-ml-20 mr-20 text-8xl '"
+          :class="isOpen ? 'text-5xl' : 'text-8xl '"
           class="font-bold text-sky-800">
           {{ typedText }}
         </h1>
@@ -69,6 +69,29 @@ onMounted(async () => {
             <i
               class="bi-arrow-down-circle text-5xl text-sky-800 animate-bounce rounded-full" />
           </button>
+        </div>
+      </Transition>
+      <Transition name="zoom">
+        <div v-if="isOpen" class="my-20 flex gap-12 text-sky-800">
+          <div class="flex items-center gap-4 text-lg">
+            <a
+              href="/"
+              class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60">
+              Sobre Nós
+            </a>
+            <div class="h-7 border-0.5 border-sky-800/60" />
+            <a
+              href="/"
+              class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60">
+              Nossos Produtos
+            </a>
+            <div class="h-7 border-0.5 border-sky-800/60" />
+            <a
+              href="/"
+              class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60">
+              Seus Pedidos
+            </a>
+          </div>
         </div>
       </Transition>
     </div>
