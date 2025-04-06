@@ -18,10 +18,22 @@ function typeEffect() {
 
 const activeCatalogBtn = ref(false)
 const isOpen = ref(false)
+const currentComponent = ref(null)
+
+const Sobre = defineAsyncComponent(() => import('@/assets/views/Sobre.vue'))
+const Catalogo = defineAsyncComponent(() =>
+  // eslint-disable-next-line @typescript-eslint/comma-dangle
+  import('@/assets/views/Catalogo.vue')
+)
+const Pedidos = defineAsyncComponent(() => import('@/assets/views/Pedidos.vue'))
 
 function openCatalog() {
   isOpen.value = true
   activeCatalogBtn.value = false
+}
+
+function loadComponent(component) {
+  currentComponent.value = component
 }
 
 onMounted(async () => {
@@ -72,26 +84,29 @@ onMounted(async () => {
         </div>
       </Transition>
       <Transition name="zoom">
-        <div v-if="isOpen" class="my-20 flex gap-12 text-sky-800">
-          <div class="flex items-center gap-4 text-lg">
-            <a
-              href="/"
-              class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60">
-              Sobre Nós
-            </a>
-            <div class="h-7 border-0.5 border-sky-800/60" />
-            <a
-              href="/"
-              class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60">
-              Nossos Produtos
-            </a>
-            <div class="h-7 border-0.5 border-sky-800/60" />
-            <a
-              href="/"
-              class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60">
-              Seus Pedidos
-            </a>
+        <div v-if="isOpen" class="my-20">
+          <div class="gap-12 text-sky-800">
+            <div class="flex justify-center items-center gap-4 text-lg">
+              <button
+                class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60"
+                @click="loadComponent(Sobre)">
+                Sobre Nós
+              </button>
+              <div class="h-7 border-0.5 border-sky-800/60" />
+              <button
+                class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60"
+                @click="loadComponent(Catalogo)">
+                Nossos Produtos
+              </button>
+              <div class="h-7 border-0.5 border-sky-800/60" />
+              <button
+                class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60"
+                @click="loadComponent(Pedidos)">
+                Seus Pedidos
+              </button>
+            </div>
           </div>
+          <component :is="currentComponent" class="mt-10" />
         </div>
       </Transition>
     </div>

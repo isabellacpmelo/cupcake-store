@@ -1,5 +1,5 @@
 <!-- @format -->
 
 <template>
-  <RouterView />
+  <div>Pedidos</div>
 </template>

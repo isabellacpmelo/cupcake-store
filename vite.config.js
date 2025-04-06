@@ -1,4 +1,9 @@
-/* eslint-disable n/prefer-global/process */
+/**
+ * eslint-disable n/prefer-global/process
+ *
+ * @format
+ */
+
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -15,6 +20,7 @@ export default defineConfig({
   base: './',
 
   define: {
+    // eslint-disable-next-line n/prefer-global/process
     APP_VERSION: JSON.stringify(process.env.npm_package_version),
   },
 
@@ -48,24 +54,19 @@ export default defineConfig({
       dts: false,
     }),
     AutoImport({
-      include: [
-        /\.js$/,
-        /\.vue$/, /\.vue\?vue/,
-        /\.md$/,
-      ],
+      include: [/\.js$/, /\.vue$/, /\.vue\?vue/, /\.md$/],
       imports: [
         'vue',
         'vue-router',
         'vue/macros',
         '@vueuse/core',
         {
-          axios: [
-            ['default', 'axios'],
-          ],
+          axios: [['default', 'axios']],
         },
       ],
       dirs: [
         'src/composables',
+        'src/views',
         'src/stores',
         'src/services',
         'src/directives',

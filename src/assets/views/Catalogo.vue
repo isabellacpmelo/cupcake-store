@@ -1,5 +1,5 @@
 <!-- @format -->
 
 <template>
-  <RouterView />
+  <div>Catálogo aqui</div>
 </template>

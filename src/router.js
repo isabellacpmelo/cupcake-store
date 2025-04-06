@@ -1,16 +1,17 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+/** @format */
+
+import { createRouter, createWebHistory } from 'vue-router'
 import { setupLayouts } from 'virtual:generated-layouts'
 import generatedRoutes from '~pages'
 
-const routes = setupLayouts(generatedRoutes)
-  .map((route, index) => {
-    route.meta = generatedRoutes[index].meta || {}
+const routes = setupLayouts(generatedRoutes).map((route, index) => {
+  route.meta = generatedRoutes[index].meta || {}
 
-    return route
-  })
+  return route
+})
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 })
 
