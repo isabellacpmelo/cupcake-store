@@ -71,15 +71,6 @@ const cupcakeBasketByFlavorAndAmountSorted = computed(() => {
   )
 })
 
-const openCart = ref(false)
-function openCartPopup() {
-  openCart.value = true
-}
-
-function closeCartPopup() {
-  openCart.value = false
-}
-
 const userName = ref('')
 const userAdress = ref('')
 const userPhone = ref('')
@@ -118,12 +109,6 @@ function closePurchase() {
   popupConfirm.value = true
   clearBasket()
 }
-
-const popupOrder = ref(false)
-function openPopupOrder() {
-  userInfo.value = JSON.parse(localStorage.getItem('orders'))
-  popupOrder.value = true
-}
 </script>
 
 <template>
@@ -150,112 +135,52 @@ function openPopupOrder() {
           </div>
         </div>
       </div>
-      <div class="flex gap-4">
-        <q-btn outline color="purple" @click="openPopupOrder">
-          <div class="flex items-center justify-center gap-2">
-            <div>Ver Pedidos</div>
-            <i class="bi bi-cart-check-fill" />
-          </div>
-        </q-btn>
-        <q-btn color="purple" @click="openCartPopup">
-          <div class="flex items-center justify-center gap-2">
-            <div>Ver carrinho</div>
-            <i class="bi bi-cart" />
-            <div>({{ cupcakeBasket.length }})</div>
-          </div>
-        </q-btn>
+    </div>
+    <div>
+      <div class="text-xl">Carrinho <i class="bi bi-cart" /></div>
+      <div v-if="cupcakeBasket.length === 0" class="mt-10">
+        Seu carrinho esta vazio
+      </div>
+      <div
+        v-for="cupcake in cupcakeBasketByFlavorAndAmountSorted"
+        :key="cupcake.flavor">
+        {{ cupcake.amount }} x {{ cupcake.flavor }} - R$
+        {{
+          cupcake.amount *
+          cupcakeBasket.find((c) => c.name === cupcake.flavor).price
+        }}
+      </div>
+      <div v-if="cupcakeBasket.length > 0">Total: R$ {{ totalPrize }}</div>
+      <div v-if="cupcakeBasket.length > 0">
+        <q-input
+          v-model="userName"
+          label="Digite seu nome completo"
+          hint="Nome e sobrenome" />
+        <q-input v-model="userAdress" label="Digite seu endereço completo" />
+        <q-input
+          v-model="userPhone"
+          mask="(##) #####-####"
+          label="Digite seu telefone para entrarmos em contato" />
+      </div>
+      <div
+        v-if="cupcakeBasket.length > 0"
+        class="mt-10 flex justify-between items-center">
+        <q-btn
+          outline
+          color="primary"
+          label="Limpar carrinho"
+          @click="clearBasket" />
+        <q-btn color="purple" label="Finalizar compra" @click="closePurchase" />
       </div>
     </div>
-    <q-dialog v-model="openCart" position="right" full-height>
-      <q-card class="column full-height" style="width: 400px">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-xl">Carrinho <i class="bi bi-cart" /></div>
-          <q-space />
-          <q-btn flat rounded @click="closeCartPopup">
-            <i class="bi bi-x" />
-          </q-btn>
-        </q-card-section>
-        <q-card-section>
-          <div v-if="cupcakeBasket.length === 0" class="mt-10">
-            Seu carrinho esta vazio
-          </div>
-          <div class="mt-10">
-            <div
-              v-for="cupcake in cupcakeBasketByFlavorAndAmountSorted"
-              :key="cupcake.flavor">
-              {{ cupcake.amount }} x {{ cupcake.flavor }} - R$
-              {{
-                cupcake.amount *
-                cupcakeBasket.find((c) => c.name === cupcake.flavor).price
-              }}
-            </div>
-          </div>
-          <div v-if="cupcakeBasket.length > 0">Total: R$ {{ totalPrize }}</div>
-          <div v-if="cupcakeBasket.length > 0">
-            <q-input
-              v-model="userName"
-              label="Digite seu nome completo"
-              hint="Nome e sobrenome" />
-            <q-input
-              v-model="userAdress"
-              label="Digite seu endereço completo" />
-            <q-input
-              v-model="userPhone"
-              mask="(##) #####-####"
-              label="Digite seu telefone para entrarmos em contato" />
-          </div>
-          <div
-            v-if="cupcakeBasket.length > 0"
-            class="mt-10 flex justify-between items-center">
-            <q-btn
-              outline
-              color="primary"
-              label="Limpar carrinho"
-              @click="clearBasket" />
-            <q-btn
-              color="purple"
-              label="Finalizar compra"
-              @click="closePurchase" />
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-    <q-dialog v-model="popupOrder">
-      <q-card style="width: 400px">
-        <q-card-section>
-          <div class="text-h6">Pedidos Realizados</div>
-        </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          <div v-for="order in userInfo" :key="order.id">
-            <div class="my-3 font-bold">{{ order.id }} - {{ order.name }}</div>
-            <div>Endereço: {{ order.address }}</div>
-            <div>Telefone: {{ order.phone }}</div>
-            <div>Total: R${{ order.total }}</div>
-            <div class="my-1 font-semibold">
-              Items ({{ order.items.length }}):
-            </div>
-            <div
-              v-for="cupcake in order.items"
-              :key="cupcake.name"
-              class="mb-2">
-              {{ cupcake.name }} - R${{ cupcake.price }}
-            </div>
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" @click="popupOrder = false" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
     <q-dialog v-model="popupConfirm">
-      <q-card>
-        <q-card-section>
+      <div class="bg-white p-4">
+        <div>
           <div class="text-h6">Confirmação de pedido</div>
-        </q-card-section>
+        </div>
 
-        <q-card-section class="q-pt-none">
+        <div class="q-pt-none">
           <div>
             Olá <span class="font-bold">{{ latestOrder.name }}</span
             >, seu pedido foi realizado com sucesso!
@@ -272,16 +197,12 @@ function openPopupOrder() {
           <div>Total: R${{ latestOrder.total }}</div>
           <div>Endereço: {{ latestOrder.address }}</div>
           <div>Telefone: {{ latestOrder.phone }}</div>
-        </q-card-section>
+        </div>
 
-        <q-card-actions align="right">
-          <q-btn
-            flat
-            label="OK"
-            color="primary"
-            @click="popupConfirm = false" />
-        </q-card-actions>
-      </q-card>
+        <div>
+          <QBtn flat label="OK" color="primary" @click="popupConfirm = false" />
+        </div>
+      </div>
     </q-dialog>
   </div>
 </template>
