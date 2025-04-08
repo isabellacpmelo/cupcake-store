@@ -113,13 +113,16 @@ function closePurchase() {
 
 <template>
   <div>
-    <div class="my-6 py-6 w-full flex flex-col justify-center items-center">
-      <div class="p-10 flex justify-center items-center w-200 mb-4">
+    <div class="w-full flex flex-col justify-center items-center">
+      <div class="flex justify-center items-center w-100 mb-4">
         <div
           v-for="cupcake in cupcakeList"
           :key="cupcake.id"
           class="flex justify-center items-center mb-4">
-          <div class="flex items-center gap-10 w-100">
+          <div class="flex items-center gap-4 w-120">
+            <div class="font-bold w-30">
+              {{ cupcake.name }} - R$ {{ cupcake.price }}
+            </div>
             <div>
               <q-btn color="purple" icon="-" @click="removeCupcake(cupcake)" />
             </div>
@@ -129,48 +132,59 @@ function closePurchase() {
             <div>
               <q-btn color="purple" icon="+" @click="addCupcake(cupcake)" />
             </div>
-            <div class="font-bold">
-              {{ cupcake.name }} - R$ {{ cupcake.price }}
-            </div>
           </div>
         </div>
       </div>
     </div>
     <div>
-      <div class="text-xl">Carrinho <i class="bi bi-cart" /></div>
-      <div v-if="cupcakeBasket.length === 0" class="mt-10">
-        Seu carrinho esta vazio
+      <div class="text-xl w-full flex justify-center items-center">
+        Carrinho <i class="bi bi-cart" />
       </div>
-      <div
-        v-for="cupcake in cupcakeBasketByFlavorAndAmountSorted"
-        :key="cupcake.flavor">
-        {{ cupcake.amount }} x {{ cupcake.flavor }} - R$
-        {{
-          cupcake.amount *
-          cupcakeBasket.find((c) => c.name === cupcake.flavor).price
-        }}
-      </div>
-      <div v-if="cupcakeBasket.length > 0">Total: R$ {{ totalPrize }}</div>
-      <div v-if="cupcakeBasket.length > 0">
-        <q-input
-          v-model="userName"
-          label="Digite seu nome completo"
-          hint="Nome e sobrenome" />
-        <q-input v-model="userAdress" label="Digite seu endereço completo" />
-        <q-input
-          v-model="userPhone"
-          mask="(##) #####-####"
-          label="Digite seu telefone para entrarmos em contato" />
-      </div>
-      <div
-        v-if="cupcakeBasket.length > 0"
-        class="mt-10 flex justify-between items-center">
-        <q-btn
-          outline
-          color="primary"
-          label="Limpar carrinho"
-          @click="clearBasket" />
-        <q-btn color="purple" label="Finalizar compra" @click="closePurchase" />
+      <div class="mt-10 w-full flex justify-center items-center">
+        <div v-if="cupcakeBasket.length === 0">
+          <p>Seu carrinho esta vazio</p>
+        </div>
+        <div v-else>
+          <div
+            v-for="cupcake in cupcakeBasketByFlavorAndAmountSorted"
+            :key="cupcake.flavor"
+            class="flex justify-center items-center">
+            <div>
+              <span>{{ cupcake.amount }} x {{ cupcake.flavor }} - R$</span>
+              <span>{{
+                cupcake.amount *
+                cupcakeBasket.find((c) => c.name === cupcake.flavor).price
+              }}</span>
+            </div>
+          </div>
+          <div>
+            <p>Total: R$ {{ totalPrize }}</p>
+          </div>
+          <div class="w-100">
+            <q-input
+              v-model="userName"
+              label="Digite seu nome completo"
+              hint="Nome e sobrenome" />
+            <q-input
+              v-model="userAdress"
+              label="Digite seu endereço completo" />
+            <q-input
+              v-model="userPhone"
+              mask="(##) #####-####"
+              label="Digite seu telefone para entrarmos em contato" />
+          </div>
+          <div class="mt-10 flex justify-between items-center">
+            <q-btn
+              outline
+              color="primary"
+              label="Limpar carrinho"
+              @click="clearBasket" />
+            <q-btn
+              color="purple"
+              label="Finalizar compra"
+              @click="closePurchase" />
+          </div>
+        </div>
       </div>
     </div>
 
