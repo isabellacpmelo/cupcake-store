@@ -20,12 +20,12 @@ const activeCatalogBtn = ref(false)
 const isOpen = ref(false)
 const currentComponent = ref(null)
 
-const Sobre = defineAsyncComponent(() => import('@/assets/views/Sobre.vue'))
-const Catalogo = defineAsyncComponent(() =>
+const About = defineAsyncComponent(() => import('@/assets/views/About.vue'))
+const Products = defineAsyncComponent(() =>
   // eslint-disable-next-line @typescript-eslint/comma-dangle
-  import('@/assets/views/Catalogo.vue')
+  import('@/assets/views/Products.vue')
 )
-const Pedidos = defineAsyncComponent(() => import('@/assets/views/Pedidos.vue'))
+const Orders = defineAsyncComponent(() => import('@/assets/views/Orders.vue'))
 
 function openCatalog() {
   isOpen.value = true
@@ -89,19 +89,19 @@ onMounted(async () => {
             <div class="flex justify-center items-center gap-4 text-lg">
               <button
                 class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60"
-                @click="loadComponent(Sobre)">
+                @click="loadComponent(About)">
                 Sobre Nós
               </button>
               <div class="h-7 border-0.5 border-sky-800/60" />
               <button
                 class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60"
-                @click="loadComponent(Catalogo)">
+                @click="loadComponent(Products)">
                 Nossos Produtos
               </button>
               <div class="h-7 border-0.5 border-sky-800/60" />
               <button
                 class="hover:text-sky-800/60 hover:border-b-1 hover:border-sky-800/60"
-                @click="loadComponent(Pedidos)">
+                @click="loadComponent(Orders)">
                 Seus Pedidos
               </button>
             </div>
