@@ -30,6 +30,7 @@ const Orders = defineAsyncComponent(() => import('@/assets/views/Orders.vue'))
 function openCatalog() {
   isOpen.value = true
   activeCatalogBtn.value = false
+  loadComponent(About)
 }
 
 function loadComponent(component) {
