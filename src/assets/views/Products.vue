@@ -113,29 +113,6 @@ function closePurchase() {
 
 <template>
   <div>
-    <!-- <div class="w-full flex flex-col justify-center items-center">
-      <div class="flex justify-center items-center w-100 mb-4">
-        <div
-          v-for="cupcake in cupcakeList"
-          :key="cupcake.id"
-          class="flex justify-center items-center mb-4">
-          <div class="flex items-center gap-4 w-120">
-            <div class="font-bold w-30">
-              {{ cupcake.name }} - R$ {{ cupcake.price }}
-            </div>
-            <div>
-              <q-btn color="purple" icon="-" @click="removeCupcake(cupcake)" />
-            </div>
-            <div class="font-bold">
-              {{ cupcakeAmountByFlavor(cupcake) }}
-            </div>
-            <div>
-              <q-btn color="purple" icon="+" @click="addCupcake(cupcake)" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> -->
     <div
       v-for="(cupcake, index) in cupcakeList"
       :key="index"
