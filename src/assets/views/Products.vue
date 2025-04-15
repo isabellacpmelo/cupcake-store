@@ -113,7 +113,7 @@ function closePurchase() {
 
 <template>
   <div>
-    <div class="w-full flex flex-col justify-center items-center">
+    <!-- <div class="w-full flex flex-col justify-center items-center">
       <div class="flex justify-center items-center w-100 mb-4">
         <div
           v-for="cupcake in cupcakeList"
@@ -135,10 +135,27 @@ function closePurchase() {
           </div>
         </div>
       </div>
+    </div> -->
+    <div
+      v-for="(cupcake, index) in cupcakeList"
+      :key="index"
+      class="my-2 grid grid-cols-3 justify-items-stretch items-center w-full">
+      <div class="flex justify-center items-center gap-5 col-span-2">
+        <div>
+          <q-btn color="purple" icon="-" @click="removeCupcake(cupcake)" />
+        </div>
+        <div>{{ cupcakeAmountByFlavor(cupcake) }}</div>
+        <div>
+          <q-btn color="purple" icon="+" @click="addCupcake(cupcake)" />
+        </div>
+      </div>
+      <div class="justify-self-auto">
+        {{ cupcake.name }} - R$ {{ cupcake.price }}
+      </div>
     </div>
     <div>
-      <div class="text-xl w-full flex justify-center items-center">
-        Carrinho <i class="bi bi-cart" />
+      <div class="text-xl w-full flex justify-center items-center mt-8">
+        Carrinho <i class="ml-2 bi bi-cart" />
       </div>
       <div class="mt-10 w-full flex justify-center items-center">
         <div v-if="cupcakeBasket.length === 0">
