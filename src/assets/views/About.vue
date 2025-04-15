@@ -3,6 +3,9 @@
 <template>
   <div class="w-full flex justify-center">
     <div class="text-xl max-w-2/3">
+      <div class="w-full flex justify-center pb-10">
+        <img src="../images/fachada.png" alt="fachada" class="h-100" />
+      </div>
       <p class="pb-10">
         Em uma charmosa ruazinha de paralelepípedos, cercada por jardins
         floridos e um aroma irresistível de baunilha e canela, nasceu a Cupcake
@@ -36,9 +39,6 @@
         forno, Clara continuava a espalhar doçura pelo mundo, uma mordida mágica
         de cada vez.
       </p>
-      <div class="w-full flex justify-center">
-        <img src="../images/fachada.png" alt="fachada" class="h-150" />
-      </div>
     </div>
   </div>
 </template>

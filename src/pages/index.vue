@@ -5,7 +5,7 @@ const baseUrl = window.origin
 const isVisible = ref(false)
 const showTitle = ref(false)
 const typedText = ref('')
-const fullText = 'Cupcake Shop'
+const fullText = 'CUPCAKE SHOP'
 let index = 0
 
 function typeEffect() {
@@ -62,12 +62,12 @@ onMounted(async () => {
             v-if="isVisible"
             :src="`${baseUrl}/img/cupcake-special.png`"
             class="brightness-125"
-            :class="isOpen ? 'h-[100px]' : 'h-[500px]'" />
+            :class="isOpen ? 'h-[100px]' : 'h-[300px]'" />
         </Transition>
 
         <h1
           v-if="showTitle"
-          :class="isOpen ? 'text-5xl' : 'text-8xl '"
+          :class="isOpen ? 'text-3xl' : 'text-6xl '"
           class="font-bold text-sky-800">
           {{ typedText }}
         </h1>
@@ -126,12 +126,12 @@ onMounted(async () => {
 
 .zoom-enter-active,
 .zoom-leave-active {
-  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
 .zoom-enter-from,
 .zoom-leave-to {
   transform: scale(0.5);
-  opacity: 0;
+  opacity: 0.1;
 }
 </style>
