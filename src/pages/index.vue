@@ -1,7 +1,7 @@
 <!-- @format -->
 
 <script setup>
-import { ref, defineAsyncComponent, onMounted } from 'vue'
+import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
 
 const baseUrl = window.origin
 const isVisible = ref(false)
@@ -22,6 +22,12 @@ const showCatalogBtn = ref(false)
 const showMenu = ref(false)
 const isOpen = ref(false)
 const currentComponent = ref(null)
+
+const heroPhase = computed(() => {
+  if (showCatalogBtn.value) return 'phase-button'
+  if (showTitle.value) return 'phase-title'
+  return 'phase-start'
+})
 
 const About = defineAsyncComponent(() => import('@/assets/views/About.vue'))
 const Products = defineAsyncComponent(() => import('@/assets/views/Products.vue'))
@@ -64,39 +70,41 @@ onMounted(() => {
   <div class="page-container">
     <!-- Vista Principal (antes de abrir catálogo) -->
     <Transition name="fade-slide">
-      <div v-if="!isOpen" class="hero-section">
+      <div v-if="!isOpen" class="hero-section" :class="heroPhase">
         <!-- Cupcake Animado -->
-        <Transition name="cupcake-enter">
-          <div v-if="isVisible" class="cupcake-wrapper">
+        <div class="cupcake-slot">
+          <div class="cupcake-wrapper" :class="{ visible: isVisible }">
             <img
               :src="`${baseUrl}/img/cupcake-special.png`"
               alt="Cupcake Especial"
               class="cupcake-image"
             />
           </div>
-        </Transition>
+        </div>
 
         <!-- Título com Typing Effect -->
-        <Transition name="title-enter">
-          <div v-if="showTitle" class="title-wrapper">
+        <div class="title-slot">
+          <div class="title-wrapper" :class="{ visible: showTitle }">
             <h1 class="main-title">{{ typedText }}<span class="cursor">|</span></h1>
             <p class="subtitle">Doces Deliciosos Feitos com Amor</p>
           </div>
-        </Transition>
+        </div>
 
         <!-- Botão de Descida -->
-        <Transition name="bounce-enter">
-          <div v-if="showCatalogBtn" class="scroll-indicator">
+        <div class="scroll-slot">
+          <div class="scroll-indicator" :class="{ visible: showCatalogBtn }">
             <button
               type="button"
               class="scroll-button"
               @click="openCatalog"
+              :tabindex="showCatalogBtn ? 0 : -1"
+              :disabled="!showCatalogBtn"
               aria-label="Explorar catálogo"
             >
               <i class="bi bi-chevron-down" />
             </button>
           </div>
-        </Transition>
+        </div>
       </div>
     </Transition>
 
@@ -180,11 +188,46 @@ onMounted(() => {
   min-height: 100vh;
   padding: 2rem;
   text-align: center;
+  transform: translateY(0);
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-section.phase-title {
+  transform: translateY(-18px);
+}
+
+.hero-section.phase-button {
+  transform: translateY(-38px);
+}
+
+.cupcake-slot,
+.title-slot,
+.scroll-slot {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.title-slot {
+  min-height: 132px;
+}
+
+.scroll-slot {
+  min-height: 80px;
 }
 
 .cupcake-wrapper {
   position: relative;
-  animation: cupcake-float 4s ease-in-out infinite;
+  opacity: 0;
+  transform: translateY(18px) scale(0.9);
+  transition:
+    opacity 600ms ease,
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cupcake-wrapper.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 @keyframes cupcake-float {
@@ -201,6 +244,8 @@ onMounted(() => {
   height: 280px;
   object-fit: contain;
   filter: drop-shadow(0 20px 40px rgba(236, 72, 153, 0.2));
+  animation: cupcake-float 4.2s cubic-bezier(0.42, 0, 0.2, 1) 0.9s infinite;
+  will-change: transform;
 }
 
 .title-wrapper {
@@ -208,6 +253,16 @@ onMounted(() => {
   flex-direction: column;
   gap: 1rem;
   animation: title-glow 2s ease-in-out infinite;
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 500ms ease,
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.title-wrapper.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @keyframes title-glow {
@@ -253,6 +308,18 @@ onMounted(() => {
 .scroll-indicator {
   display: flex;
   justify-content: center;
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+  transition:
+    opacity 450ms ease,
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scroll-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
   animation: bounce-up 2s ease-in-out infinite;
 }
 
@@ -408,55 +475,6 @@ onMounted(() => {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-20px);
-}
-
-.cupcake-enter-enter-active {
-  animation: scale-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes scale-pop {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.title-enter-enter-active {
-  animation: fade-in-slide-up 0.8s ease-out 0.3s both;
-}
-
-@keyframes fade-in-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.bounce-enter-enter-active {
-  animation: fade-in-bounce 0.8s ease-out 0.5s both;
-}
-
-@keyframes fade-in-bounce {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .content-appear-enter-active {
