@@ -2,7 +2,7 @@
 
 <template>
   <Teleport to="body">
-    <Transition name="modal-fade">
+    <Transition name="modal-fade" mode="out-in">
       <div v-if="modelValue" class="modal-overlay" @click="closeModal">
         <div
           class="modal-container"

@@ -44,9 +44,10 @@ function onSelect(component) {
     </button>
   </div>
 
-  <Transition name="menu-slide">
+  <Transition name="menu-slide" mode="out-in">
     <TabMenu
       v-if="showMenu"
+      key="catalog-menu"
       :items="menuItems"
       :active-item="currentComponent"
       @select="onSelect"

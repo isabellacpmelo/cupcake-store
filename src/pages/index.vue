@@ -44,8 +44,8 @@ const menuItems = [
 ]
 
 function openCatalog() {
-  isOpen.value = true
   loadComponent(Products)
+  isOpen.value = true
 }
 
 function loadComponent(component) {
@@ -55,10 +55,10 @@ function loadComponent(component) {
 
 <template>
   <div class="page-container">
-    <!-- Vista Principal (antes de abrir catálogo) -->
-    <Transition name="fade-slide">
+    <Transition name="screen-switch" mode="out-in">
       <HeroIntro
         v-if="!isOpen"
+        key="hero"
         :base-url="baseUrl"
         :is-visible="isVisible"
         :show-title="showTitle"
@@ -67,11 +67,8 @@ function loadComponent(component) {
         :hero-phase="heroPhase"
         @open-catalog="openCatalog"
       />
-    </Transition>
 
-    <!-- Vista de Conteúdo (depois de abrir catálogo) -->
-    <Transition name="content-appear">
-      <CatalogContentShell v-if="isOpen" :current-component="currentComponent">
+      <CatalogContentShell v-else key="catalog" :current-component="currentComponent">
         <template #header>
           <CatalogHeader
             :base-url="baseUrl"
@@ -96,46 +93,19 @@ function loadComponent(component) {
   justify-content: center;
 }
 
-/* Transições */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+.screen-switch-enter-active,
+.screen-switch-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
-.fade-slide-enter-from {
+.screen-switch-enter-from {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(10px);
 }
 
-.fade-slide-leave-to {
+.screen-switch-leave-to {
   opacity: 0;
-  transform: translateY(-20px);
-}
-
-.content-appear-enter-active {
-  animation: fade-in 0.5s ease-out;
-}
-
-.content-appear-leave-active {
-  animation: fade-out 0.3s ease-out;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+  transform: translateY(-10px);
 }
 
 .component-fade-enter-active,
