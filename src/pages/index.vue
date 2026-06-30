@@ -1,7 +1,7 @@
 <!-- @format -->
 
 <script setup>
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, shallowRef, markRaw, defineAsyncComponent } from 'vue'
 import HeroIntro from '@/components/HeroIntro.vue'
 import CatalogHeader from '@/components/CatalogHeader.vue'
 import CatalogContentShell from '@/components/CatalogContentShell.vue'
@@ -19,11 +19,11 @@ const {
 } = useHeroIntroAnimation()
 
 const isOpen = ref(false)
-const currentComponent = ref(null)
+const currentComponent = shallowRef(null)
 
-const About = defineAsyncComponent(() => import('@/assets/views/About.vue'))
-const Products = defineAsyncComponent(() => import('@/assets/views/Products.vue'))
-const Orders = defineAsyncComponent(() => import('@/assets/views/Orders.vue'))
+const About = markRaw(defineAsyncComponent(() => import('@/assets/views/About.vue')))
+const Products = markRaw(defineAsyncComponent(() => import('@/assets/views/Products.vue')))
+const Orders = markRaw(defineAsyncComponent(() => import('@/assets/views/Orders.vue')))
 
 const menuItems = [
   {

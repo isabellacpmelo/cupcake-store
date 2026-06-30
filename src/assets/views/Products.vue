@@ -224,7 +224,7 @@ const quantityByProduct = computed(() => {
                 label="Telefone"
                 type="tel"
                 placeholder="(11) 98765-4321"
-                maxlength="14"
+                :maxlength="14"
                 :error="formErrors.phone"
                 @blur="() => validateForm()"
               />
