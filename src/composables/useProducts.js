@@ -1,7 +1,16 @@
 import { ref, computed } from 'vue'
+// TODO: importar `api` de '@/services/api' quando o backend estiver pronto
 
 export function useProducts() {
-  // Dados hardcoded dos produtos
+  // TODO: substituir este array por uma chamada GET /products
+  // Exemplo:
+  //   const products = ref([])
+  //   onMounted(async () => {
+  //     const { data } = await api.get('/products')
+  //     products.value = data
+  //   })
+  // Campos esperados da API: { id, name, price, description, imageUrl }
+  // O campo `emoji` pode ser removido quando houver imagem real.
   const products = ref([
     {
       id: 1,
@@ -40,6 +49,7 @@ export function useProducts() {
     },
   ])
 
+  // TODO: substituir por GET /products/:id quando vier do banco
   const getProductById = (id) => products.value.find(p => p.id === id)
 
   return {

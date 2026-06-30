@@ -1,19 +1,37 @@
 import { ref, computed } from 'vue'
+// TODO: importar `api` de '@/services/api' quando o backend estiver pronto
 
+// TODO: remover STORAGE_KEY e todas as funções de localStorage
+// quando os pedidos passarem a ser persistidos no banco via API
 const STORAGE_KEY = 'cupcake_orders'
 
 export function useOrders() {
+  // TODO: substituir por GET /orders (com autenticação do usuário)
+  // Exemplo:
+  //   const orders = ref([])
+  //   onMounted(async () => {
+  //     const { data } = await api.get('/orders')
+  //     orders.value = data
+  //   })
   const orders = ref(loadOrdersFromStorage())
 
+  // TODO: remover — substituída por GET /orders
   function loadOrdersFromStorage() {
     const stored = localStorage.getItem(STORAGE_KEY)
     return stored ? JSON.parse(stored) : []
   }
 
+  // TODO: remover — substituída por POST /orders (ver createOrder abaixo)
   function saveOrdersToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders.value))
   }
 
+  // TODO: substituir o corpo desta função por POST /orders
+  // Exemplo:
+  //   const { data } = await api.post('/orders', { customerData, items })
+  //   orders.value.push(data)
+  //   return data
+  // O id e o timestamp devem vir do backend, não serem gerados no front.
   function createOrder(customerData, items) {
     const order = {
       id: orders.value.length + 1,
@@ -32,7 +50,7 @@ export function useOrders() {
       })),
     }
     orders.value.push(order)
-    saveOrdersToStorage()
+    saveOrdersToStorage() // TODO: remover após integração com API
     return order
   }
 
