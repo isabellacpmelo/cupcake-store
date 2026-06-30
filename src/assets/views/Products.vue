@@ -10,10 +10,11 @@ import { useCart } from '@/composables/useCart'
 import { useOrders } from '@/composables/useOrders'
 
 const { products } = useProducts()
-const { items, addItem, removeItem, clearCart, totalPrice, itemsSummary } = useCart()
-const { createOrder, orders } = useOrders()
+const { items, addItem, removeItem, clearCart, totalPrice, totalItems } = useCart()
+const { createOrder } = useOrders()
 
-// Formulário
+const isCartOpen = ref(false)
+
 const form = ref({
   name: '',
   address: '',
@@ -21,12 +22,9 @@ const form = ref({
 })
 
 const formErrors = ref({})
-
-// Modal de confirmação
 const showConfirmation = ref(false)
 const lastOrder = ref(null)
 
-// Validações
 const validateForm = () => {
   formErrors.value = {}
 
@@ -45,7 +43,6 @@ const validateForm = () => {
   return Object.keys(formErrors.value).length === 0
 }
 
-// Manipuladores
 const handleAddItem = (product) => {
   addItem(product)
 }
@@ -80,7 +77,16 @@ const handleCheckout = () => {
   lastOrder.value = createOrder(form.value, items.value)
   clearCart()
   resetForm()
+  isCartOpen.value = false
   showConfirmation.value = true
+}
+
+const toggleCart = () => {
+  isCartOpen.value = !isCartOpen.value
+}
+
+const closeCart = () => {
+  isCartOpen.value = false
 }
 
 const quantityByProduct = computed(() => {
@@ -95,7 +101,6 @@ const quantityByProduct = computed(() => {
 <template>
   <div class="products-container">
     <div class="products-grid">
-      <!-- Título -->
       <div class="section-header">
         <h2 class="section-title">
           <i class="bi bi-shop" />
@@ -104,15 +109,16 @@ const quantityByProduct = computed(() => {
         <p class="section-subtitle">Escolha seus sabores favoritos</p>
       </div>
 
-      <!-- Lista de Produtos -->
       <div class="products-list">
         <div v-for="product in products" :key="product.id" class="product-card">
           <div class="product-emoji">{{ product.emoji }}</div>
+
           <div class="product-info">
             <h3 class="product-name">{{ product.name }}</h3>
             <p class="product-description">{{ product.description }}</p>
             <div class="product-price">R$ {{ product.price.toFixed(2) }}</div>
           </div>
+
           <div class="product-controls">
             <Btn
               icon="dash-circle"
@@ -128,94 +134,108 @@ const quantityByProduct = computed(() => {
       </div>
     </div>
 
-    <!-- Carrinho -->
-    <div class="cart-section">
-      <div class="section-header">
-        <h2 class="section-title">
-          <i class="bi bi-bag-check" />
-          Seu Carrinho
-        </h2>
-      </div>
+    <button
+      class="floating-cart-button"
+      :class="{ 'is-hidden': isCartOpen }"
+      @click="toggleCart"
+      :aria-expanded="isCartOpen"
+      aria-controls="cart-popup"
+    >
+      <i class="bi bi-bag-check-fill" />
+      <span class="floating-cart-label">Carrinho</span>
+      <span v-if="totalItems > 0" class="floating-cart-count">{{ totalItems }}</span>
+    </button>
 
-      <div v-if="items.length === 0" class="empty-cart">
-        <i class="bi bi-bag-slash" />
-        <p>Seu carrinho está vazio</p>
-        <small>Adicione alguns cupcakes para começar!</small>
-      </div>
+    <Transition name="cart-popup">
+      <section v-if="isCartOpen" id="cart-popup" class="cart-popup" aria-label="Seu carrinho">
+        <header class="cart-popup-header">
+          <h2 class="popup-title">
+            <i class="bi bi-bag-check" />
+            Seu Carrinho
+          </h2>
 
-      <div v-else class="cart-content">
-        <!-- Itens do Carrinho -->
-        <div class="cart-items">
-          <div v-for="item in items" :key="item.id" class="cart-item">
-            <div class="item-header">
-              <span class="item-emoji">{{ item.emoji }}</span>
-              <div class="item-details">
-                <div class="item-name">{{ item.name }}</div>
-                <div class="item-quantity">Qtd: {{ item.quantity }}</div>
+          <button class="popup-minimize" @click="closeCart" aria-label="Minimizar carrinho">
+            <i class="bi bi-dash-lg" />
+          </button>
+        </header>
+
+        <div class="cart-popup-body">
+          <div v-if="items.length === 0" class="empty-cart">
+            <i class="bi bi-bag-slash" />
+            <p>Seu carrinho está vazio</p>
+            <small>Adicione alguns cupcakes para começar!</small>
+          </div>
+
+          <div v-else class="cart-content">
+            <div class="cart-items">
+              <div v-for="item in items" :key="item.id" class="cart-item">
+                <div class="item-header">
+                  <span class="item-emoji">{{ item.emoji }}</span>
+                  <div class="item-details">
+                    <div class="item-name">{{ item.name }}</div>
+                    <div class="item-quantity">Qtd: {{ item.quantity }}</div>
+                  </div>
+                </div>
+                <div class="item-price">R$ {{ (item.price * item.quantity).toFixed(2) }}</div>
               </div>
             </div>
-            <div class="item-price">R$ {{ (item.price * item.quantity).toFixed(2) }}</div>
+
+            <div class="cart-total">
+              <span>Total:</span>
+              <strong>R$ {{ totalPrice.toFixed(2) }}</strong>
+            </div>
+
+            <div class="customer-form">
+              <h3 class="form-title">Dados para Entrega</h3>
+              <Input
+                v-model="form.name"
+                label="Nome Completo"
+                placeholder="João Silva"
+                :error="formErrors.name"
+                @blur="() => validateForm()"
+              />
+              <Input
+                v-model="form.address"
+                label="Endereço Completo"
+                placeholder="Rua das Flores, 123"
+                :error="formErrors.address"
+                @blur="() => validateForm()"
+              />
+              <Input
+                v-model="form.phone"
+                label="Telefone"
+                type="tel"
+                placeholder="(11) 98765-4321"
+                maxlength="14"
+                :error="formErrors.phone"
+                @blur="() => validateForm()"
+              />
+            </div>
+
+            <div class="cart-actions">
+              <Btn
+                label="Limpar Carrinho"
+                icon="trash"
+                variant="outline"
+                size="md"
+                full-width
+                @click="handleClearCart"
+              />
+              <Btn
+                label="Finalizar Compra"
+                icon="credit-card"
+                icon-position="right"
+                variant="primary"
+                size="md"
+                full-width
+                @click="handleCheckout"
+              />
+            </div>
           </div>
         </div>
+      </section>
+    </Transition>
 
-        <!-- Total -->
-        <div class="cart-total">
-          <span>Total:</span>
-          <strong>R$ {{ totalPrice.toFixed(2) }}</strong>
-        </div>
-
-        <!-- Formulário de Dados -->
-        <div class="customer-form">
-          <h3 class="form-title">Dados para Entrega</h3>
-          <Input
-            v-model="form.name"
-            label="Nome Completo"
-            placeholder="João Silva"
-            :error="formErrors.name"
-            @blur="() => validateForm()"
-          />
-          <Input
-            v-model="form.address"
-            label="Endereço Completo"
-            placeholder="Rua das Flores, 123"
-            :error="formErrors.address"
-            @blur="() => validateForm()"
-          />
-          <Input
-            v-model="form.phone"
-            label="Telefone"
-            type="tel"
-            placeholder="(11) 98765-4321"
-            maxlength="14"
-            :error="formErrors.phone"
-            @blur="() => validateForm()"
-          />
-        </div>
-
-        <!-- Botões de Ação -->
-        <div class="cart-actions">
-          <Btn
-            label="Limpar Carrinho"
-            icon="trash"
-            variant="outline"
-            size="md"
-            full-width
-            @click="handleClearCart"
-          />
-          <Btn
-            label="Finalizar Compra"
-            icon="credit-card"
-            icon-position="right"
-            variant="primary"
-            size="md"
-            full-width
-            @click="handleCheckout"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de Confirmação -->
     <Modal v-model="showConfirmation" title="Pedido Confirmado!" size="md">
       <div class="confirmation-content">
         <div class="success-icon">
@@ -256,12 +276,7 @@ const quantityByProduct = computed(() => {
       </div>
 
       <template #footer>
-        <Btn
-          label="Fechar"
-          variant="primary"
-          size="md"
-          @click="showConfirmation = false"
-        />
+        <Btn label="Fechar" variant="primary" size="md" @click="showConfirmation = false" />
       </template>
     </Modal>
   </div>
@@ -269,17 +284,16 @@ const quantityByProduct = computed(() => {
 
 <style scoped>
 .products-container {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 2rem;
-  padding: 2rem 0;
+  position: relative;
+  padding: 2rem 0 7rem;
 }
 
-/* Produtos */
 .products-grid {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  max-width: 1180px;
+  margin: 0 auto;
 }
 
 .section-header {
@@ -310,12 +324,13 @@ const quantityByProduct = computed(() => {
 
 .products-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   gap: 1.5rem;
 }
 
 .product-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 1.5rem;
   padding: 1.5rem;
@@ -338,7 +353,7 @@ const quantityByProduct = computed(() => {
 }
 
 .product-info {
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
@@ -366,7 +381,7 @@ const quantityByProduct = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-shrink: 0;
+  align-self: end;
 }
 
 .quantity-badge {
@@ -382,18 +397,113 @@ const quantityByProduct = computed(() => {
   font-size: 0.875rem;
 }
 
-/* Carrinho */
-.cart-section {
+.floating-cart-button {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 40;
+  height: 3.6rem;
+  padding: 0 1.2rem;
+  border: none;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 16px 34px rgba(236, 72, 153, 0.35);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+}
+
+.floating-cart-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(236, 72, 153, 0.4);
+}
+
+.floating-cart-button.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.floating-cart-button i {
+  font-size: 1.1rem;
+}
+
+.floating-cart-count {
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: white;
+  color: var(--color-primary-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.25rem;
+}
+
+.cart-popup {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 6rem;
+  z-index: 45;
+  width: min(430px, calc(100vw - 2rem));
+  max-height: calc(100vh - 8rem);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: 2rem;
-  background: white;
   border-radius: 1rem;
+  overflow: hidden;
+  background: white;
   border: 2px solid var(--color-primary-lighter);
-  height: fit-content;
-  position: sticky;
-  top: 2rem;
+  box-shadow: var(--shadow-xl);
+}
+
+.cart-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.2rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(160deg, #fff 0%, #fff6fb 100%);
+}
+
+.popup-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.popup-minimize {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-lighter);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.popup-minimize:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.cart-popup-body {
+  padding: 1.2rem;
+  overflow-y: auto;
 }
 
 .empty-cart {
@@ -433,7 +543,7 @@ const quantityByProduct = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: 300px;
+  max-height: 220px;
   overflow-y: auto;
   padding-right: 0.5rem;
 }
@@ -520,7 +630,17 @@ const quantityByProduct = computed(() => {
   gap: 0.75rem;
 }
 
-/* Modal de Confirmação */
+.cart-popup-enter-active,
+.cart-popup-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cart-popup-enter-from,
+.cart-popup-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
 .confirmation-content {
   display: flex;
   flex-direction: column;
@@ -604,25 +724,29 @@ const quantityByProduct = computed(() => {
   line-height: 1.6;
 }
 
-/* Responsivo */
 @media (max-width: 1024px) {
-  .products-container {
-    grid-template-columns: 1fr;
-  }
-
-  .cart-section {
-    position: static;
+  .products-list {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
+  .products-container {
+    padding-bottom: 6.5rem;
+  }
+
   .products-list {
     grid-template-columns: 1fr;
   }
 
   .product-card {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     text-align: center;
+  }
+
+  .product-controls {
+    justify-content: center;
+    align-self: center;
   }
 
   .section-title {
@@ -631,6 +755,22 @@ const quantityByProduct = computed(() => {
 
   .cart-items {
     max-height: 200px;
+  }
+
+  .floating-cart-button {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .floating-cart-label {
+    display: none;
+  }
+
+  .cart-popup {
+    right: 1rem;
+    bottom: 5rem;
+    width: calc(100vw - 2rem);
+    max-height: calc(100vh - 7rem);
   }
 }
 </style>
