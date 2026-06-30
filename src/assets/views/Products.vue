@@ -1,218 +1,636 @@
 <!-- @format -->
 
 <script setup>
-const cupcakeList = [
-  {
-    id: 1,
-    name: 'Chocolate',
-    price: 10,
-  },
-  {
-    id: 2,
-    name: 'Morango',
-    price: 10,
-  },
-  {
-    id: 3,
-    name: 'Laranja',
-    price: 8,
-  },
-  {
-    id: 4,
-    name: 'Nutela',
-    price: 13,
-  },
-  {
-    id: 5,
-    name: 'Ovomalte',
-    price: 13,
-  },
-]
+import { ref, computed } from 'vue'
+import Btn from '@/components/Btn.vue'
+import Input from '@/components/Input.vue'
+import Modal from '@/components/Modal.vue'
+import { useProducts } from '@/composables/useProducts'
+import { useCart } from '@/composables/useCart'
+import { useOrders } from '@/composables/useOrders'
 
-const cupcakeBasket = ref([])
-function addCupcake(cupcake) {
-  cupcakeBasket.value.push(cupcake)
-}
+const { products } = useProducts()
+const { items, addItem, removeItem, clearCart, totalPrice, itemsSummary } = useCart()
+const { createOrder, orders } = useOrders()
 
-function removeCupcake(cupcake) {
-  cupcakeBasket.value.splice(cupcakeBasket.value.indexOf(cupcake), 1)
-}
-
-function cupcakeAmountByFlavor(cupcake) {
-  return cupcakeBasket.value.filter((c) => c.name === cupcake.name).length
-}
-
-const totalPrize = computed(() =>
-  cupcakeBasket.value.reduce((acc, cupcake) => acc + cupcake.price, 0)
-)
-
-const cupcakeBasketByFlavor = computed(() =>
-  cupcakeBasket.value.reduce((acc, cupcake) => {
-    if (acc[cupcake.name]) acc[cupcake.name].push(cupcake)
-    else acc[cupcake.name] = [cupcake]
-    return acc
-  }, {})
-)
-
-const cupcakeBasketByFlavorAndAmount = computed(() => {
-  return Object.entries(cupcakeBasketByFlavor.value).map(
-    ([flavor, cupcakes]) => {
-      return {
-        flavor,
-        amount: cupcakes.length,
-      }
-    }
-  )
+// Formulário
+const form = ref({
+  name: '',
+  address: '',
+  phone: '',
 })
 
-const cupcakeBasketByFlavorAndAmountSorted = computed(() => {
-  return cupcakeBasketByFlavorAndAmount.value.sort((a, b) =>
-    a.flavor.localeCompare(b.flavor)
-  )
-})
+const formErrors = ref({})
 
-const userName = ref('')
-const userAdress = ref('')
-const userPhone = ref('')
+// Modal de confirmação
+const showConfirmation = ref(false)
+const lastOrder = ref(null)
 
-function clearBasket() {
-  cupcakeBasket.value = []
-  userName.value = ''
-  userAdress.value = ''
-  userPhone.value = ''
-}
+// Validações
+const validateForm = () => {
+  formErrors.value = {}
 
-const userInfo = ref([])
-const latestOrder = ref({})
-
-const popupConfirm = ref(false)
-function closePurchase() {
-  const orders = JSON.parse(localStorage.getItem('orders')) || []
-
-  const nextId = orders.length > 0 ? orders[orders.length - 1].id + 1 : 1
-
-  const newOrder = {
-    id: nextId,
-    name: userName.value,
-    address: userAdress.value,
-    phone: userPhone.value,
-    total: totalPrize.value,
-    items: cupcakeBasket.value,
+  if (!form.value.name.trim()) {
+    formErrors.value.name = 'Nome é obrigatório'
   }
 
-  orders.push(newOrder)
+  if (!form.value.address.trim()) {
+    formErrors.value.address = 'Endereço é obrigatório'
+  }
 
-  localStorage.setItem('orders', JSON.stringify(orders))
-  userInfo.value = orders
-  latestOrder.value = newOrder
+  if (!form.value.phone.trim() || form.value.phone.length < 14) {
+    formErrors.value.phone = 'Telefone inválido'
+  }
 
-  popupConfirm.value = true
-  clearBasket()
+  return Object.keys(formErrors.value).length === 0
 }
+
+// Manipuladores
+const handleAddItem = (product) => {
+  addItem(product)
+}
+
+const handleRemoveItem = (productId) => {
+  removeItem(productId)
+}
+
+const handleClearCart = () => {
+  clearCart()
+  resetForm()
+}
+
+const resetForm = () => {
+  form.value = {
+    name: '',
+    address: '',
+    phone: '',
+  }
+  formErrors.value = {}
+}
+
+const handleCheckout = () => {
+  if (!validateForm()) {
+    return
+  }
+
+  if (items.value.length === 0) {
+    return
+  }
+
+  lastOrder.value = createOrder(form.value, items.value)
+  clearCart()
+  resetForm()
+  showConfirmation.value = true
+}
+
+const quantityByProduct = computed(() => {
+  const map = {}
+  items.value.forEach((item) => {
+    map[item.id] = item.quantity
+  })
+  return map
+})
 </script>
 
 <template>
-  <div>
-    <div
-      v-for="(cupcake, index) in cupcakeList"
-      :key="index"
-      class="my-2 grid grid-cols-3 justify-items-stretch items-center w-full">
-      <div class="flex justify-center items-center gap-5 col-span-2">
-        <div>
-          <q-btn color="purple" icon="-" @click="removeCupcake(cupcake)" />
-        </div>
-        <div>{{ cupcakeAmountByFlavor(cupcake) }}</div>
-        <div>
-          <q-btn color="purple" icon="+" @click="addCupcake(cupcake)" />
-        </div>
+  <div class="products-container">
+    <div class="products-grid">
+      <!-- Título -->
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="bi bi-shop" />
+          Nossos Cupcakes
+        </h2>
+        <p class="section-subtitle">Escolha seus sabores favoritos</p>
       </div>
-      <div class="justify-self-auto">
-        {{ cupcake.name }} - R$ {{ cupcake.price }}
+
+      <!-- Lista de Produtos -->
+      <div class="products-list">
+        <div v-for="product in products" :key="product.id" class="product-card">
+          <div class="product-emoji">{{ product.emoji }}</div>
+          <div class="product-info">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-description">{{ product.description }}</p>
+            <div class="product-price">R$ {{ product.price.toFixed(2) }}</div>
+          </div>
+          <div class="product-controls">
+            <Btn
+              icon="dash-circle"
+              variant="outline"
+              size="sm"
+              @click="handleRemoveItem(product.id)"
+              :disabled="!quantityByProduct[product.id]"
+            />
+            <span class="quantity-badge">{{ quantityByProduct[product.id] || 0 }}</span>
+            <Btn icon="plus-circle" variant="primary" size="sm" @click="handleAddItem(product)" />
+          </div>
+        </div>
       </div>
     </div>
-    <div>
-      <div class="text-xl w-full flex justify-center items-center mt-8">
-        Carrinho <i class="ml-2 bi bi-cart" />
+
+    <!-- Carrinho -->
+    <div class="cart-section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i class="bi bi-bag-check" />
+          Seu Carrinho
+        </h2>
       </div>
-      <div class="mt-10 w-full flex justify-center items-center">
-        <div v-if="cupcakeBasket.length === 0">
-          <p>Seu carrinho esta vazio</p>
+
+      <div v-if="items.length === 0" class="empty-cart">
+        <i class="bi bi-bag-slash" />
+        <p>Seu carrinho está vazio</p>
+        <small>Adicione alguns cupcakes para começar!</small>
+      </div>
+
+      <div v-else class="cart-content">
+        <!-- Itens do Carrinho -->
+        <div class="cart-items">
+          <div v-for="item in items" :key="item.id" class="cart-item">
+            <div class="item-header">
+              <span class="item-emoji">{{ item.emoji }}</span>
+              <div class="item-details">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-quantity">Qtd: {{ item.quantity }}</div>
+              </div>
+            </div>
+            <div class="item-price">R$ {{ (item.price * item.quantity).toFixed(2) }}</div>
+          </div>
         </div>
-        <div v-else>
-          <div
-            v-for="cupcake in cupcakeBasketByFlavorAndAmountSorted"
-            :key="cupcake.flavor"
-            class="flex justify-center items-center">
-            <div>
-              <span>{{ cupcake.amount }} x {{ cupcake.flavor }} - R$</span>
-              <span>{{
-                cupcake.amount *
-                cupcakeBasket.find((c) => c.name === cupcake.flavor).price
-              }}</span>
+
+        <!-- Total -->
+        <div class="cart-total">
+          <span>Total:</span>
+          <strong>R$ {{ totalPrice.toFixed(2) }}</strong>
+        </div>
+
+        <!-- Formulário de Dados -->
+        <div class="customer-form">
+          <h3 class="form-title">Dados para Entrega</h3>
+          <Input
+            v-model="form.name"
+            label="Nome Completo"
+            placeholder="João Silva"
+            :error="formErrors.name"
+            @blur="() => validateForm()"
+          />
+          <Input
+            v-model="form.address"
+            label="Endereço Completo"
+            placeholder="Rua das Flores, 123"
+            :error="formErrors.address"
+            @blur="() => validateForm()"
+          />
+          <Input
+            v-model="form.phone"
+            label="Telefone"
+            type="tel"
+            placeholder="(11) 98765-4321"
+            maxlength="14"
+            :error="formErrors.phone"
+            @blur="() => validateForm()"
+          />
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="cart-actions">
+          <Btn
+            label="Limpar Carrinho"
+            icon="trash"
+            variant="outline"
+            size="md"
+            full-width
+            @click="handleClearCart"
+          />
+          <Btn
+            label="Finalizar Compra"
+            icon="credit-card"
+            icon-position="right"
+            variant="primary"
+            size="md"
+            full-width
+            @click="handleCheckout"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <Modal v-model="showConfirmation" title="Pedido Confirmado!" size="md">
+      <div class="confirmation-content">
+        <div class="success-icon">
+          <i class="bi bi-check-circle" />
+        </div>
+        <p class="confirmation-message">
+          Olá <strong>{{ lastOrder?.name }}</strong>, seu pedido foi realizado com sucesso!
+        </p>
+
+        <div class="confirmation-details">
+          <div class="detail-section">
+            <h4>Itens Pedidos</h4>
+            <div class="items-summary">
+              <div v-for="item in lastOrder?.items" :key="item.id" class="summary-item">
+                <span>{{ item.emoji }} {{ item.name }}</span>
+                <span>{{ item.quantity }}x - R$ {{ (item.price * item.quantity).toFixed(2) }}</span>
+              </div>
             </div>
           </div>
-          <div>
-            <p>Total: R$ {{ totalPrize }}</p>
+
+          <div class="detail-section">
+            <div class="total-summary">
+              <span>Total:</span>
+              <strong>R$ {{ lastOrder?.total.toFixed(2) }}</strong>
+            </div>
           </div>
-          <div class="w-100">
-            <q-input
-              v-model="userName"
-              label="Digite seu nome completo"
-              hint="Nome e sobrenome" />
-            <q-input
-              v-model="userAdress"
-              label="Digite seu endereço completo" />
-            <q-input
-              v-model="userPhone"
-              mask="(##) #####-####"
-              label="Digite seu telefone para entrarmos em contato" />
+
+          <div class="detail-section">
+            <h4>Endereço de Entrega</h4>
+            <p class="detail-text">{{ lastOrder?.address }}</p>
           </div>
-          <div class="mt-10 flex justify-between items-center">
-            <q-btn
-              outline
-              color="primary"
-              label="Limpar carrinho"
-              @click="clearBasket" />
-            <q-btn
-              color="purple"
-              label="Finalizar compra"
-              @click="closePurchase" />
+
+          <div class="detail-section">
+            <h4>Telefone para Contato</h4>
+            <p class="detail-text">{{ lastOrder?.phone }}</p>
           </div>
         </div>
       </div>
-    </div>
 
-    <q-dialog v-model="popupConfirm">
-      <div class="bg-white p-4">
-        <div>
-          <div class="text-h6">Confirmação de pedido</div>
-        </div>
-
-        <div class="q-pt-none">
-          <div>
-            Olá <span class="font-bold">{{ latestOrder.name }}</span
-            >, seu pedido foi realizado com sucesso!
-          </div>
-          <div class="my-1 font-semibold">
-            Items ({{ latestOrder.items.length }}):
-          </div>
-          <div
-            v-for="cupcake in latestOrder.items"
-            :key="cupcake.name"
-            class="mb-2">
-            {{ cupcake.name }} - R${{ cupcake.price }}
-          </div>
-          <div>Total: R${{ latestOrder.total }}</div>
-          <div>Endereço: {{ latestOrder.address }}</div>
-          <div>Telefone: {{ latestOrder.phone }}</div>
-        </div>
-
-        <div>
-          <QBtn flat label="OK" color="primary" @click="popupConfirm = false" />
-        </div>
-      </div>
-    </q-dialog>
+      <template #footer>
+        <Btn
+          label="Fechar"
+          variant="primary"
+          size="md"
+          @click="showConfirmation = false"
+        />
+      </template>
+    </Modal>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.products-container {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+/* Produtos */
+.products-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.section-title i {
+  font-size: 2rem;
+}
+
+.section-subtitle {
+  margin: 0.5rem 0 0 0;
+  color: var(--color-text-light);
+  font-size: 1rem;
+}
+
+.products-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.product-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  border: 2px solid var(--color-border);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.15);
+}
+
+.product-emoji {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin: 0 0 0.25rem 0;
+}
+
+.product-description {
+  font-size: 0.875rem;
+  color: var(--color-text-light);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+.product-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.product-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.quantity-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary-lighter);
+  border-radius: 0.5rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: 0.875rem;
+}
+
+/* Carrinho */
+.cart-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 1rem;
+  border: 2px solid var(--color-primary-lighter);
+  height: fit-content;
+  position: sticky;
+  top: 2rem;
+}
+
+.empty-cart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.empty-cart i {
+  font-size: 3rem;
+  color: var(--color-primary-lighter);
+}
+
+.empty-cart p {
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.empty-cart small {
+  color: var(--color-text-light);
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.cart-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  background: var(--color-light);
+  border-radius: 0.75rem;
+  border-left: 4px solid var(--color-primary);
+}
+
+.item-header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-emoji {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.item-details {
+  min-width: 0;
+}
+
+.item-name {
+  font-weight: 600;
+  color: var(--color-dark);
+  font-size: 0.95rem;
+}
+
+.item-quantity {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}
+
+.item-price {
+  font-weight: 700;
+  color: var(--color-primary);
+  text-align: right;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, var(--color-primary-lighter) 0%, var(--color-light) 100%);
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  font-size: 1.125rem;
+  border-bottom: 3px solid var(--color-primary);
+}
+
+.customer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.form-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.cart-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Modal de Confirmação */
+.confirmation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 3rem;
+  color: var(--color-success);
+  animation: scale-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scale-pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.confirmation-message {
+  font-size: 1.125rem;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.confirmation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: left;
+}
+
+.detail-section {
+  padding: 1rem;
+  background: var(--color-light);
+  border-radius: 0.75rem;
+}
+
+.detail-section h4 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.75rem 0;
+}
+
+.items-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.total-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.detail-text {
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .products-container {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-section {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-list {
+    grid-template-columns: 1fr;
+  }
+
+  .product-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .cart-items {
+    max-height: 200px;
+  }
+}
+</style>
