@@ -144,7 +144,7 @@ const handleFormFieldUpdate = ({ field, value }) => {
 <style scoped>
 .products-container {
   position: relative;
-  padding: 2rem 0 7rem;
+  padding: 2rem clamp(0.75rem, 2.5vw, 1.25rem) 7rem;
 }
 
 .products-grid {
@@ -195,7 +195,7 @@ const handleFormFieldUpdate = ({ field, value }) => {
 
 @media (max-width: 768px) {
   .products-container {
-    padding: 1rem 0.75rem 6.5rem;
+    padding: 1rem clamp(0.75rem, 4vw, 1rem) 6.5rem;
   }
 
   .products-list {
