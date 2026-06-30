@@ -111,24 +111,28 @@ const quantityByProduct = computed(() => {
 
       <div class="products-list">
         <div v-for="product in products" :key="product.id" class="product-card">
-          <div class="product-emoji">{{ product.emoji }}</div>
-
           <div class="product-info">
-            <h3 class="product-name">{{ product.name }}</h3>
+            <div class="product-heading">
+              <div class="product-emoji">{{ product.emoji }}</div>
+              <h3 class="product-name">{{ product.name }}</h3>
+            </div>
             <p class="product-description">{{ product.description }}</p>
-            <div class="product-price">R$ {{ product.price.toFixed(2) }}</div>
           </div>
 
-          <div class="product-controls">
-            <Btn
-              icon="dash-circle"
-              variant="outline"
-              size="sm"
-              @click="handleRemoveItem(product.id)"
-              :disabled="!quantityByProduct[product.id]"
-            />
-            <span class="quantity-badge">{{ quantityByProduct[product.id] || 0 }}</span>
-            <Btn icon="plus-circle" variant="primary" size="sm" @click="handleAddItem(product)" />
+          <div class="product-actions">
+            <div class="product-price">R$ {{ product.price.toFixed(2) }}</div>
+
+            <div class="product-controls">
+              <Btn
+                icon="dash-lg"
+                variant="outline"
+                size="sm"
+                @click="handleRemoveItem(product.id)"
+                :disabled="!quantityByProduct[product.id]"
+              />
+              <span class="quantity-badge">{{ quantityByProduct[product.id] || 0 }}</span>
+              <Btn icon="plus-lg" variant="primary" size="sm" @click="handleAddItem(product)" />
+            </div>
           </div>
         </div>
       </div>
@@ -173,7 +177,21 @@ const quantityByProduct = computed(() => {
                   <span class="item-emoji">{{ item.emoji }}</span>
                   <div class="item-details">
                     <div class="item-name">{{ item.name }}</div>
-                    <div class="item-quantity">Qtd: {{ item.quantity }}</div>
+                    <div class="cart-qty-controls">
+                      <Btn
+                        icon="dash-lg"
+                        variant="outline"
+                        size="sm"
+                        @click="handleRemoveItem(item.id)"
+                      />
+                      <span class="cart-qty-badge">{{ item.quantity }}</span>
+                      <Btn
+                        icon="plus-lg"
+                        variant="primary"
+                        size="sm"
+                        @click="handleAddItem(item)"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div class="item-price">R$ {{ (item.price * item.quantity).toFixed(2) }}</div>
@@ -324,74 +342,149 @@ const quantityByProduct = computed(() => {
 
 .products-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1rem;
 }
 
 .product-card {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 1rem;
-  border: 2px solid var(--color-border);
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(165deg, #fffafc 0%, #ffffff 62%, #fff6fb 100%);
+  border-radius: 0.9rem;
+  border: 1px solid rgba(236, 72, 153, 0.16);
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  box-shadow: 0 8px 18px rgba(190, 24, 93, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(236, 72, 153, 0.45) 35%, transparent 100%);
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   border-color: var(--color-primary);
-  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.15);
+  box-shadow: 0 16px 30px rgba(190, 24, 93, 0.16);
 }
 
 .product-emoji {
-  font-size: 3rem;
+  font-size: 2rem;
   flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, #fde6f3 75%);
+  box-shadow: inset 0 0 0 1px rgba(236, 72, 153, 0.12);
 }
 
 .product-info {
   width: 100%;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.product-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
 .product-name {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
   color: var(--color-dark);
-  margin: 0 0 0.25rem 0;
+  margin: 0;
 }
 
 .product-description {
   font-size: 0.875rem;
   color: var(--color-text-light);
-  margin: 0 0 0.75rem 0;
-  line-height: 1.4;
+  margin: 0;
+  line-height: 1.42;
+  line-clamp: 2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-width: 108px;
+  padding-left: 0.95rem;
+  border-left: 1px solid rgba(236, 72, 153, 0.16);
 }
 
 .product-price {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 800;
   color: var(--color-primary);
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 0%, #ffe7f4 100%);
+  border: 1px solid rgba(236, 72, 153, 0.24);
+  padding: 0.42rem 0.6rem;
+  border-radius: 999px;
+  box-shadow: inset 0 -1px 0 rgba(236, 72, 153, 0.08);
 }
 
 .product-controls {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  align-self: end;
+  justify-content: center;
+  gap: 0.35rem;
+  background: rgba(236, 72, 153, 0.08);
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  border-radius: 999px;
+  padding: 0.22rem;
+}
+
+.product-controls :deep(.btn.sm) {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  border-radius: 999px;
+  flex: 0 0 30px;
+}
+
+.product-controls :deep(.btn.sm .btn-icon) {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.product-controls :deep(.btn.outline) {
+  border-width: 1px;
 }
 
 .quantity-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary-lighter);
-  border-radius: 0.5rem;
+  width: 30px;
+  height: 30px;
+  background: white;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 72, 153, 0.25);
   font-weight: 600;
   color: var(--color-primary);
   font-size: 0.875rem;
@@ -573,6 +666,9 @@ const quantityByProduct = computed(() => {
 
 .item-details {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
 .item-name {
@@ -581,9 +677,47 @@ const quantityByProduct = computed(() => {
   font-size: 0.95rem;
 }
 
-.item-quantity {
+.cart-qty-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(236, 72, 153, 0.08);
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  border-radius: 999px;
+  padding: 0.2rem;
+}
+
+.cart-qty-controls :deep(.btn.sm) {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  padding: 0;
+  border-radius: 999px;
+  flex: 0 0 26px;
+}
+
+.cart-qty-controls :deep(.btn.sm .btn-icon) {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.cart-qty-controls :deep(.btn.outline) {
+  border-width: 1px;
+}
+
+.cart-qty-badge {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid rgba(236, 72, 153, 0.25);
+  color: var(--color-primary);
   font-size: 0.8rem;
-  color: var(--color-text-light);
+  font-weight: 700;
 }
 
 .item-price {
@@ -726,13 +860,13 @@ const quantityByProduct = computed(() => {
 
 @media (max-width: 1024px) {
   .products-list {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
   .products-container {
-    padding-bottom: 6.5rem;
+    padding: 1rem 0.75rem 6.5rem;
   }
 
   .products-list {
@@ -741,12 +875,19 @@ const quantityByProduct = computed(() => {
 
   .product-card {
     grid-template-columns: 1fr;
-    text-align: center;
+    text-align: left;
+    gap: 0.85rem;
   }
 
-  .product-controls {
-    justify-content: center;
-    align-self: center;
+  .product-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 0;
+    padding-top: 0.75rem;
+    border-left: none;
+    border-top: 1px solid rgba(236, 72, 153, 0.16);
   }
 
   .section-title {
