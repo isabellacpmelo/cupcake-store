@@ -1,35 +1,25 @@
 <!-- @format -->
 
 <script setup>
-import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import HeroIntro from '@/components/HeroIntro.vue'
 import CatalogHeader from '@/components/CatalogHeader.vue'
+import CatalogContentShell from '@/components/CatalogContentShell.vue'
+import { useHeroIntroAnimation } from '@/composables/useHeroIntroAnimation'
 
 const baseUrl = window.origin
-const isVisible = ref(false)
-const showTitle = ref(false)
-const typedText = ref('')
-const fullText = 'CUPCAKE SHOP'
-let typeIndex = 0
 
-function typeEffect() {
-  if (typeIndex < fullText.length) {
-    typedText.value += fullText[typeIndex]
-    typeIndex++
-    setTimeout(typeEffect, 80)
-  }
-}
+const {
+  isVisible,
+  showTitle,
+  typedText,
+  showCatalogBtn,
+  showMenu,
+  heroPhase,
+} = useHeroIntroAnimation()
 
-const showCatalogBtn = ref(false)
-const showMenu = ref(false)
 const isOpen = ref(false)
 const currentComponent = ref(null)
-
-const heroPhase = computed(() => {
-  if (showCatalogBtn.value) return 'phase-button'
-  if (showTitle.value) return 'phase-title'
-  return 'phase-start'
-})
 
 const About = defineAsyncComponent(() => import('@/assets/views/About.vue'))
 const Products = defineAsyncComponent(() => import('@/assets/views/Products.vue'))
@@ -61,29 +51,6 @@ function openCatalog() {
 function loadComponent(component) {
   currentComponent.value = component
 }
-
-onMounted(() => {
-  // Fase 1: Mostra o cupcake
-  setTimeout(() => {
-    isVisible.value = true
-  }, 300)
-
-  // Fase 2: Mostra o título com typing effect
-  setTimeout(() => {
-    showTitle.value = true
-    typeEffect()
-  }, 900)
-
-  // Fase 3: Mostra o botão de descida
-  setTimeout(() => {
-    showCatalogBtn.value = true
-  }, 3500)
-
-  // Fase 4: Mostra o menu
-  setTimeout(() => {
-    showMenu.value = true
-  }, 4000)
-})
 </script>
 
 <template>
@@ -104,25 +71,18 @@ onMounted(() => {
 
     <!-- Vista de Conteúdo (depois de abrir catálogo) -->
     <Transition name="content-appear">
-      <div v-if="isOpen" class="content-section">
-        <CatalogHeader
-          :base-url="baseUrl"
-          :show-menu="showMenu"
-          :current-component="currentComponent"
-          :menu-items="menuItems"
-          @close="isOpen = false"
-          @select-component="loadComponent"
-        />
-
-        <!-- Conteúdo Dinâmico -->
-        <Transition name="component-fade" mode="out-in">
-          <component
-            :is="currentComponent"
-            :key="currentComponent"
-            class="component-content"
+      <CatalogContentShell v-if="isOpen" :current-component="currentComponent">
+        <template #header>
+          <CatalogHeader
+            :base-url="baseUrl"
+            :show-menu="showMenu"
+            :current-component="currentComponent"
+            :menu-items="menuItems"
+            @close="isOpen = false"
+            @select-component="loadComponent"
           />
-        </Transition>
-      </div>
+        </template>
+      </CatalogContentShell>
     </Transition>
   </div>
 </template>
@@ -134,20 +94,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* Content Section */
-.content-section {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.component-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
 }
 
 /* Transições */
@@ -202,10 +148,4 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* Responsivo */
-@media (max-width: 768px) {
-  .component-content {
-    padding: 1rem;
-  }
-}
 </style>
